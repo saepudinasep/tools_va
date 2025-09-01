@@ -23,16 +23,15 @@
         <div class="card-body">
           <form id="searchForm">
             <div class="row g-3">
-              <div class="col-md-12">
+              <div class="col-md-3">
                 <label for="searchNoKontrak" class="form-label"
                   >No Kontrak</label
                 >
                 <input
-                  type="number"
+                  type="text"
                   id="searchNoKontrak"
                   class="form-control"
                   placeholder="Masukkan No Kontrak"
-                  min="0"
                 />
               </div>
             </div>
@@ -68,11 +67,9 @@
     </div>
 
     <script>
-      // Ganti URL ini dengan link Publish to Web CSV dari sheet "Report Third Party App"
       const sheetUrl =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYS0MoVkJU7UfTiTkFsMIf6H-u8Etg7DaWGfAPs5xNaOvIOCVBTnHEBJro2jlv3rvoL9MMm7IFx-nK/pub?gid=1941594669&single=true&output=csv";
 
-      // Tampilkan loader
       function showLoader() {
         Swal.fire({
           title: "Mohon Tunggu",
@@ -84,32 +81,27 @@
         });
       }
 
-      // Tutup loader
       function hideLoader() {
         Swal.close();
       }
 
-      // Fungsi untuk mencari data
       function searchData(noKontrak) {
-        showLoader(); // tampilkan loader
+        showLoader();
         Papa.parse(sheetUrl, {
           download: true,
-          header: false, // karena header ada di row ke-4
+          header: false,
           skipEmptyLines: true,
           complete: function (results) {
-            hideLoader(); // tutup loader setelah data didapat
-
+            hideLoader();
             const rows = results.data;
 
-            // Ambil header dari row ke-4 (index 3)
-            const headers = rows[3];
+            const headers = rows[3]; // header di baris ke-4
             const data = rows
               .slice(4)
               .map((row) =>
                 Object.fromEntries(row.map((val, i) => [headers[i], val]))
               );
 
-            // Filter berdasarkan NO KONTRAK
             const filteredData = data.filter(
               (row) =>
                 row["NO KONTRAK"] && row["NO KONTRAK"].trim() === noKontrak
@@ -124,7 +116,6 @@
         });
       }
 
-      // Fungsi tampilkan hasil
       function showResult(data) {
         const tbody = document.querySelector("#resultTable tbody");
         tbody.innerHTML = "";
@@ -156,10 +147,13 @@
           const noKontrak = document
             .getElementById("searchNoKontrak")
             .value.trim();
-          if (!noKontrak) {
-            Swal.fire("Peringatan", "Silakan isi No Kontrak", "warning");
+
+          // Validasi: hanya angka dan tidak boleh negatif
+          if (!/^\d+$/.test(noKontrak)) {
+            Swal.fire("Peringatan", "No Kontrak tidak ada!", "warning");
             return;
           }
+
           searchData(noKontrak);
         });
 
