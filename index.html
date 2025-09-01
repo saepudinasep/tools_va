@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cek Pengajuan PT POS | WOM Finance</title>
+    <link rel="icon" href="wom-finance.jpg" type="image/png" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  </head>
+  <body class="bg-light">
+    <div class="container py-3">
+      <h1 class="mb-4 text-center">Cek Pengajuan PT POS | WOM Finance</h1>
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0 small">Cari Berdasarkan No Kontrak</h5>
+        </div>
+        <div class="card-body">
+          <form id="searchForm">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label for="searchNoKontrak" class="form-label"
+                  >No Kontrak</label
+                >
+                <input
+                  type="text"
+                  id="searchNoKontrak"
+                  class="form-control"
+                  placeholder="Masukkan No Kontrak"
+                />
+              </div>
+            </div>
+            <div class="mt-3 text-end">
+              <button
+                type="button"
+                id="clearBtn"
+                class="btn btn-secondary me-2"
+              >
+                Clear
+              </button>
+              <button type="button" id="searchBtn" class="btn btn-primary">
+                Cari
+              </button>
+            </div>
+          </form>
+
+          <!-- Tabel untuk Menampilkan Hasil Pencarian -->
+          <table class="table mt-3" id="resultTable">
+            <thead>
+              <tr>
+                <th scope="col">No</th>
+                <th scope="col">Nomor VA</th>
+                <th scope="col">Nominal DP</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Data hasil pencarian akan muncul disini -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Ganti URL ini dengan link Publish to Web CSV dari sheet "Report Third Party App"
+      const sheetUrl =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYS0MoVkJU7UfTiTkFsMIf6H-u8Etg7DaWGfAPs5xNaOvIOCVBTnHEBJro2jlv3rvoL9MMm7IFx-nK/pub?gid=1941594669&single=true&output=csv";
+
+      // Tampilkan loader
+      function showLoader() {
+        Swal.fire({
+          title: "Mohon Tunggu",
+          text: "Sedang mengambil data...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+      }
+
+      // Tutup loader
+      function hideLoader() {
+        Swal.close();
+      }
+
+      // Fungsi untuk mencari data
+      function searchData(noKontrak) {
+        showLoader(); // tampilkan loader
+        Papa.parse(sheetUrl, {
+          download: true,
+          header: false, // karena header ada di row ke-4
+          skipEmptyLines: true,
+          complete: function (results) {
+            hideLoader(); // tutup loader setelah data didapat
+
+            const rows = results.data;
+
+            // Ambil header dari row ke-4 (index 3)
+            const headers = rows[3];
+            const data = rows
+              .slice(4)
+              .map((row) =>
+                Object.fromEntries(row.map((val, i) => [headers[i], val]))
+              );
+
+            // Filter berdasarkan NO KONTRAK
+            const filteredData = data.filter(
+              (row) =>
+                row["NO KONTRAK"] && row["NO KONTRAK"].trim() === noKontrak
+            );
+
+            showResult(filteredData);
+          },
+          error: function () {
+            hideLoader();
+            Swal.fire("Error", "Gagal mengambil data dari server", "error");
+          },
+        });
+      }
+
+      // Fungsi tampilkan hasil
+      function showResult(data) {
+        const tbody = document.querySelector("#resultTable tbody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          Swal.fire(
+            "Data Tidak Ditemukan",
+            "Periksa kembali No Kontrak",
+            "warning"
+          );
+          return;
+        }
+
+        data.forEach((row, index) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${row["NOMOR VA"] || "-"}</td>
+            <td>${row["NOMINAL DP"] || "-"}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Tombol cari
+      document
+        .getElementById("searchBtn")
+        .addEventListener("click", function () {
+          const noKontrak = document
+            .getElementById("searchNoKontrak")
+            .value.trim();
+          if (!noKontrak) {
+            Swal.fire("Peringatan", "Silakan isi No Kontrak", "warning");
+            return;
+          }
+          searchData(noKontrak);
+        });
+
+      // Tombol clear
+      document
+        .getElementById("clearBtn")
+        .addEventListener("click", function () {
+          document.getElementById("searchForm").reset();
+          document.querySelector("#resultTable tbody").innerHTML = "";
+        });
+    </script>
+  </body>
+</html>
