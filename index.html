@@ -55,7 +55,7 @@
               <tr>
                 <th scope="col">No</th>
                 <th scope="col">Nomor VA</th>
-                <th scope="col">Nominal DP</th>
+                <th scope="col">Nominal VA</th>
               </tr>
             </thead>
             <tbody>
@@ -68,7 +68,7 @@
 
     <script>
       const sheetUrl =
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYS0MoVkJU7UfTiTkFsMIf6H-u8Etg7DaWGfAPs5xNaOvIOCVBTnHEBJro2jlv3rvoL9MMm7IFx-nK/pub?gid=1941594669&single=true&output=csv";
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTgdNXLAD1FgfeHlkNcz60jOI4YTzRbE5xcYEIG1DJqR72GZ-7Gk1PgifpbULQtVPB3yYrAZxfFOJnC/pub?output=csv";
 
       function showLoader() {
         Swal.fire({
@@ -95,7 +95,7 @@
             hideLoader();
             const rows = results.data;
 
-            const headers = rows[3]; // header di baris ke-4
+            const headers = rows[2]; // header di baris ke-4
             const data = rows
               .slice(4)
               .map((row) =>
@@ -134,7 +134,7 @@
           tr.innerHTML = `
             <td>${index + 1}</td>
             <td>${row["NOMOR VA"] || "-"}</td>
-            <td>${row["NOMINAL DP"] || "-"}</td>
+            <td>${row["NOMINAL VA"] || "-"}</td>
           `;
           tbody.appendChild(tr);
         });
